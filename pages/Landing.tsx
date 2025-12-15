@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useCompany } from '../context/CompanyContext';
 import { 
   Wrench, 
   Package, 
@@ -18,6 +19,21 @@ import {
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
+  const { company } = useCompany();
+  const config = company.landingConfig || {
+      heroTitle: 'Venda, conserte e gerencie tudo com inteligência artificial.',
+      heroSubtitle: 'App completo para lojas de celular e informática. Organize suas vendas, suporte e manutenção com tecnologia.',
+      useCarousel: false,
+      heroVideoUrl: '',
+      heroImageUrl: '',
+      heroOverlayOpacity: 80,
+      banners: [],
+      featuredVideo: { title: '', description: '', videoUrl: '' },
+      showFeatures: true,
+      showPlans: true,
+      showTestimonials: true
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* Navbar */}
@@ -26,7 +42,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex justify-between items-center h-8">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Layers className="text-gray-900" size={24} />
-              <span className="text-xl font-bold text-gray-900 font-heading tracking-tight">WrCell System</span>
+              <span className="text-xl font-bold text-gray-900 font-heading tracking-tight">{company.name || 'WrCell System'}</span>
             </Link>
             
             <div className="hidden md:flex space-x-8 text-sm font-medium text-gray-500">
@@ -54,15 +70,25 @@ export const LandingPage: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-40 pb-32 bg-[#0B0F19] text-center px-4">
-        <div className="max-w-5xl mx-auto">
+      <section id="home" className="relative pt-40 pb-32 overflow-hidden">
+        {/* Background Logic */}
+        <div className="absolute inset-0 z-0 bg-[#0B0F19]">
+            {config.heroVideoUrl ? (
+                <video autoPlay loop muted className="w-full h-full object-cover opacity-30">
+                    <source src={config.heroVideoUrl} type="video/mp4" />
+                </video>
+            ) : config.heroImageUrl ? (
+                <img src={config.heroImageUrl} className="w-full h-full object-cover opacity-30" alt="Hero Background" />
+            ) : null}
+            {/* If simple color fallback is needed, the parent div has bg color */}
+        </div>
+
+        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white font-heading tracking-wide leading-tight mb-6">
-            Venda, conserte e gerencie tudo com<br />
-            inteligência artificial.
+            {config.heroTitle}
           </h1>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto mb-16 font-light">
-            App completo para lojas de celular e informática. Organize suas<br />
-            vendas, suporte e manutenção com tecnologia.
+            {config.heroSubtitle}
           </p>
           
           <div className="flex justify-center items-center gap-12 text-sm font-bold">
@@ -138,28 +164,39 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Video Demo Section */}
+      {/* Featured Video Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-16">
             <div className="w-full md:w-1/2">
               <div className="bg-[#1a1a1a] rounded-lg aspect-video flex items-center justify-center shadow-2xl relative group cursor-pointer overflow-hidden">
-                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all"></div>
-                 <div className="h-16 w-16 rounded-full border-2 border-white flex items-center justify-center text-white z-10 group-hover:scale-110 transition-transform">
-                    <Play fill="white" size={24} className="ml-1" />
-                 </div>
-                 <span className="absolute bottom-4 left-4 text-white text-xs font-mono">0:00</span>
+                 {config.featuredVideo?.videoUrl ? (
+                     <iframe 
+                        className="w-full h-full" 
+                        src={config.featuredVideo.videoUrl} 
+                        title="Featured Video" 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                     ></iframe>
+                 ) : (
+                     <>
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all"></div>
+                        <div className="h-16 w-16 rounded-full border-2 border-white flex items-center justify-center text-white z-10 group-hover:scale-110 transition-transform">
+                            <Play fill="white" size={24} className="ml-1" />
+                        </div>
+                        <span className="absolute bottom-4 left-4 text-white text-xs font-mono">0:00</span>
+                     </>
+                 )}
               </div>
             </div>
             <div className="w-full md:w-1/2">
               <h2 className="text-3xl font-bold text-gray-900 font-heading mb-4">
-                Demonstração Visual do<br />Sistema
+                {config.featuredVideo?.title || 'Demonstração Visual do Sistema'}
               </h2>
               <p className="text-gray-500 mb-8 leading-relaxed">
-                Veja na prática como nossa plataforma pode simplificar a gestão da
-                sua assistência técnica. Do check-in do aparelho à finalização da
-                Ordem de Serviço, tudo é pensado para otimizar seu tempo e aumentar
-                sua produtividade.
+                {config.featuredVideo?.description || 
+                'Veja na prática como nossa plataforma pode simplificar a gestão da sua assistência técnica. Do check-in do aparelho à finalização da Ordem de Serviço, tudo é pensado para otimizar seu tempo e aumentar sua produtividade.'}
               </p>
               <button className="bg-[#0F172A] text-white px-6 py-3 rounded text-sm font-bold hover:bg-gray-800 transition-colors">
                 Quero Testar Agora
@@ -310,7 +347,7 @@ export const LandingPage: React.FC = () => {
         <div className="border-t border-gray-100 pt-8 max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
              <Layers size={16} />
-             <span className="font-bold text-gray-900">WrCell System</span>
+             <span className="font-bold text-gray-900">{company.name}</span>
           </div>
           <div className="flex gap-6">
             <a href="#" className="hover:text-gray-900">Início</a>

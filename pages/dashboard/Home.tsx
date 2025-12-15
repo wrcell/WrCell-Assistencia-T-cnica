@@ -14,9 +14,10 @@ import {
   ShoppingCart,
   Users,
   Package,
-  BarChart2
+  BarChart2,
+  Clock
 } from 'lucide-react';
-import { MOCK_ORDERS, MOCK_READY_PICKUP, MOCK_DEBTORS } from '../../services/mockData';
+import { MOCK_ORDERS, MOCK_READY_PICKUP, MOCK_DEBTORS, MOCK_INSTALLMENTS } from '../../services/mockData';
 
 const KPI_CARD = ({ title, value, subtext, icon: Icon }: any) => (
   <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-32 group">
@@ -42,7 +43,25 @@ const QuickActionCard = ({ to, icon: Icon, label, colorClass }: any) => (
   </Link>
 );
 
+const getClientName = (clientId: string) => {
+  // Using MOCK_USERS imported from mockData would be ideal, but for now filtering MOCK_ORDERS is simpler in this scope
+  // Or better, just return the raw ID if name lookup isn't readily available without importing ALL users.
+  // In a real app, you'd have a user lookup.
+  return clientId; // Simplified for this view to avoid large imports if not strictly necessary
+};
+
 export const DashboardHome: React.FC = () => {
+  // Calculate Due Payments for Alerts
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const dueAlerts = MOCK_INSTALLMENTS.filter(inst => {
+      if (inst.status === 'Pago') return false;
+      const dueDate = new Date(inst.dueDate);
+      dueDate.setHours(0,0,0,0);
+      return dueDate <= today; // Overdue or Due Today
+  });
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 font-sans">
       {/* Header */}
@@ -55,6 +74,32 @@ export const DashboardHome: React.FC = () => {
            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
       </div>
+
+      {/* ALERTS SECTION - Added based on request */}
+      {dueAlerts.length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm animate-fade-in">
+              <div className="flex items-start">
+                  <AlertCircle className="text-red-500 mr-3 mt-0.5" size={20} />
+                  <div className="flex-1">
+                      <h3 className="text-sm font-bold text-red-800 font-heading">Atenção: Contas a Receber Vencendo</h3>
+                      <p className="text-sm text-red-700 mt-1">
+                          Você possui <span className="font-bold">{dueAlerts.length}</span> conta(s) vencendo hoje ou atrasadas.
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                          {dueAlerts.slice(0, 3).map(alert => (
+                              <span key={alert.id} className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                  {alert.clientName} - R$ {alert.value.toFixed(2)}
+                              </span>
+                          ))}
+                          {dueAlerts.length > 3 && <span className="text-xs text-red-600 mt-1">...e mais {dueAlerts.length - 3}.</span>}
+                      </div>
+                      <Link to="/dashboard/receivables" className="text-xs font-bold text-red-800 hover:underline mt-2 inline-block">
+                          Ver Contas a Receber &rarr;
+                      </Link>
+                  </div>
+              </div>
+          </div>
+      )}
 
       {/* Quick Actions - Acesso Rápido */}
       <div>
@@ -160,7 +205,7 @@ export const DashboardHome: React.FC = () => {
                   {MOCK_ORDERS.slice(0, 5).map((os) => (
                     <tr key={os.id} className="group hover:bg-gray-50 transition-colors">
                       <td className="py-4 pl-2 text-sm font-medium text-gray-900">{os.id}</td>
-                      <td className="py-4 text-sm text-gray-600">{os.client_name}</td>
+                      <td className="py-4 text-sm text-gray-600">{os.clientId}</td>
                       <td className="py-4 text-center">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                           ${os.status === 'Concluído' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -168,7 +213,7 @@ export const DashboardHome: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-4 pr-2 text-right text-sm text-gray-500">
-                        {new Date(os.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(os.entryDate).toLocaleDateString('pt-BR')}
                       </td>
                     </tr>
                   ))}

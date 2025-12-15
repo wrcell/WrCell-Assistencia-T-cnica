@@ -20,13 +20,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Simulate API call
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        // Mock login
+        // Mock login returning a User object matching types.ts
         setUser({
-          id: 'u1',
-          name: 'Admin User',
+          id: '1',
+          companyId: '1',
+          firstName: 'Admin',
+          lastName: 'User',
           email: email,
-          role: 'admin',
-          company_id: 'c1'
+          phone: '(00) 00000-0000',
+          profile: 'admin'
         });
         setIsLoading(false);
         resolve();

@@ -31,7 +31,8 @@ import {
   Wallet,
   ShieldCheck,
   LayoutGrid,
-  LifeBuoy
+  LifeBuoy,
+  Crown
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -40,8 +41,13 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+interface SidebarItemProps {
+  item: any;
+  onClose: () => void;
+}
+
 // Subcomponent for handling individual menu items or collapsible groups
-const SidebarItem = ({ item, onClose }: { item: any; onClose: () => void }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ item, onClose }) => {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -120,7 +126,8 @@ const SidebarItem = ({ item, onClose }: { item: any; onClose: () => void }) => {
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { logout } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = user?.profile === 'admin';
 
   const navItems = [
     // --- PRINCIPAL (Direct Links) ---
@@ -168,25 +175,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       ]
     },
 
-    // --- ADMINISTRAÇÃO (Dropdown) ---
-    {
+    // --- ADMINISTRAÇÃO (Dropdown) - ADMIN ONLY ---
+    ...(isAdmin ? [{
       label: 'ADMINISTRAÇÃO',
       icon: ShieldCheck,
       subItems: [
+        { to: '/dashboard/subscribers', label: 'Assinantes' },
+        { to: '/dashboard/admins', label: 'Administradores' },
+        { to: '/dashboard/notifications', label: 'Notificações' },
+        { to: '/dashboard/content-gen', label: 'Gerador de Conteúdo' },
+        { to: '/dashboard/companies', label: 'Empresas' },
+        { to: '/dashboard/permissions', label: 'Permissões' },
         { to: '/dashboard/settings', label: 'Configurações' },
-        { to: '/dashboard/companies', label: 'Minhas Empresas' },
-        { to: '/dashboard/permissions', label: 'Permissões de Acesso' },
-        { to: '/dashboard/admins', label: 'Usuários do Sistema' },
-        { to: '/dashboard/notifications', label: 'Central de Notificações' },
       ]
-    },
+    }] : []),
     
     // --- AJUDA (Dropdown) ---
     {
       label: 'AJUDA',
       icon: LifeBuoy,
       subItems: [
-        { to: '/dashboard/faq', label: 'Perguntas Frequentes' },
+        { to: '/dashboard/faq', label: 'Ajuda & FAQ' },
         { to: '/dashboard/about', label: 'Sobre o Sistema' },
         { to: '/dashboard/terms', label: 'Termos de Uso' },
       ]

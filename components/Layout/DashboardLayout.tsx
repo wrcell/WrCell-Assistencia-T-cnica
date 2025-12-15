@@ -28,7 +28,7 @@ export const DashboardLayout: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center text-sm font-medium text-gray-700">
               <User size={16} className="mr-2 text-gray-400" />
-              {user?.name || 'Usuário'}
+              {user ? `${user.firstName} ${user.lastName}` : 'Usuário'}
             </div>
             <div className="h-4 w-px bg-gray-300"></div>
             <button 
